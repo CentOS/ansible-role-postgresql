@@ -1,0 +1,21 @@
+# Postgresql.conf - Managed by Ansible
+# For all default values, see postgresql.conf original file
+
+max_connections = {{ pgsql_max_connections }}
+shared_buffers = {{ pgsql_shared_buffers }}MB
+
+logging_collector = on
+log_filename = 'postgresql-%a.log'
+log_truncate_on_rotation = on
+log_rotation_age = 1d
+log_rotation_size = 0
+log_timezone = 'UTC'
+datestyle = 'iso, mdy'
+timezone = 'UTC'
+
+lc_messages = 'en_US.UTF-8'			# locale for system error message
+lc_monetary = 'en_US.UTF-8'			# locale for monetary formatting
+lc_numeric = 'en_US.UTF-8'			# locale for number formatting
+lc_time = 'en_US.UTF-8'				# locale for time formatting
+default_text_search_config = 'pg_catalog.english'
+	

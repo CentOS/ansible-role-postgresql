@@ -1,0 +1,27 @@
+---
+# defaults variables for postgresql
+
+# Postgresql.conf settings
+pgsql_max_connections: 100
+pgsql_shared_buffers: 32 #in MB
+
+# Clients for pg_hba.conf - see https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
+pgsql_hba_clients:
+  - type: local
+    database: all
+    user: postgres
+    auth_method: peer
+  - type: local
+    database: all
+    user: all
+    auth_method: peer
+  - type: host
+    database: all
+    user: all
+    address: '127.0.0.1/32'
+    auth_method: md5
+  - type: host
+    database: all
+    user: all
+    address: '::1/128'
+    auth_method: md5

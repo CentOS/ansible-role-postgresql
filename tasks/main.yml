@@ -1,0 +1,39 @@
+---
+# tasks file for postgresql
+- name: Ensuring all PostgreSQL pkgs are installed
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - postgresql-server
+    - postgresql-contrib
+    - postgresql-plpython
+    - python-psycopg2
+    
+- name: Initialize postgres if necessary
+  command: /usr/bin/postgresql-setup initdb
+  args:
+    creates: /var/lib/pgsql/data/postgresql.conf
+
+- name: Distribute Postgresql config files
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/lib/pgsql/data/{{ item }}"
+  with_items:
+    - postgresql.conf
+    - pg_hba.conf
+  notify:
+    - restart_postgresql
+
+- name: Ensuring postgresql is started and enabled
+  service:
+    name: postgresql
+    state: started
+    enabled: True
+
+# Backup
+- name: Ensuring backup user and jobs
+  include_role:
+    name: centos-backup
+    tasks_from: client
+    
