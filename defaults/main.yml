@@ -14,7 +14,7 @@ pgsql_hba_clients:
   - type: local
     database: all
     user: all
-    auth_method: peer
+    auth_method: md5
   - type: host
     database: all
     user: all
