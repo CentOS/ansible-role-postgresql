@@ -19,6 +19,7 @@
   template:
     src: "{{ item }}.j2"
     dest: "/var/lib/pgsql/data/{{ item }}"
+    mode: 0600
   with_items:
     - postgresql.conf
     - pg_hba.conf
