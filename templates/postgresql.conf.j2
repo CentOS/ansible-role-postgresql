@@ -3,7 +3,12 @@
 
 max_connections = {{ pgsql_max_connections }}
 shared_buffers = {{ pgsql_shared_buffers }}MB
-
+{% if pgsql_network_listen %}
+listen_addresses = '*'
+{% endif %}
+{% if pgsql_tls %}
+ssl = on 
+{% endif %}
 logging_collector = on
 log_filename = 'postgresql-%a.log'
 log_truncate_on_rotation = on

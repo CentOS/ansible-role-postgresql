@@ -5,7 +5,24 @@
 pgsql_max_connections: 100
 pgsql_shared_buffers: 32 #in MB
 
+# Do we want to also be reachable on the network ?
+# opening tcp/5432 and listening on all interfaces
+# See also below to tune your settings based on network
+pgsql_network_listen: False
+# If true, which subnets we'll authorize for iptables and also automatically added in pg_hba (see below, concatenated)
+pgsql_network_subnets:
+  - 192.168.1.0/24
+
+# TLS support, optional but recommended if pgsql_network_listen !
+# Default to False for testing puroposes. 
+# Don't forget to point to real key/crt it set to True
+pgsql_tls: False
+pgsql_tls_key: server.key
+pgsql_tls_cert: server.crt
+pgsql_tls_ca: ca.crt
+
 # Clients for pg_hba.conf - see https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
+# Remark: if pgsql_network_listen is set to True, the pgsql_network_subnets will be automatically added to this list with md5 auth
 pgsql_hba_clients:
   - type: local
     database: all
@@ -25,3 +42,20 @@ pgsql_hba_clients:
     user: all
     address: '::1/128'
     auth_method: md5
+
+# Do we want default users and databases to be created
+# By default empty list
+# example
+# pgsql_users:
+#   - name: user1
+#     password: pass1
+#     role_attr: "NOCREATEDB,NOSUPERUSER,NOCREATEROLE"
+#     db: database1
+pgsql_users: []
+
+# Same for Databases
+# example:
+# pgsql_databases:
+#   - name: database1
+#     owner: user1
+pgsql_databases: []     

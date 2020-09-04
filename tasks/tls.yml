@@ -1,0 +1,28 @@
+- block: 
+    - name: Distribute TLS cert
+      copy:
+        src: "{{ pkistore }}/{{ pgsql_tls_cert }}"
+        dest: /var/lib/pgsql/data/server.crt
+        mode: 0600
+        owner: postgres
+      notify: restart_postgresql
+
+    - name: Distribute TLS key
+      copy:
+        src: "{{ pkistore }}/{{ pgsql_tls_key }}"
+        dest: /var/lib/pgsql/data/server.key
+        mode: 0600
+        owner: postgres
+      notify: restart_postgresql
+
+    - name: Distribute TLS CA
+      copy:
+        src: "{{ pkistore }}/{{ pgsql_tls_ca }}"
+        dest: /var/lib/pgsql/data/root.crt
+        mode: 0600
+        owner: postgres
+      notify: restart_postgresql
+  when: pgsql_tls
+  tags:
+    - tls
+    - certs

@@ -3,3 +3,9 @@
 {% for login in pgsql_hba_clients %}
 {{ login.type }} {{ login.database }} {{ login.user }} {{ login.address|default('') }} {{ login.ip_address|default('') }} {{ login.ip_mask|default('') }} {{ login.auth_method }} {{ login.auth_options|default("") }}
 {% endfor %}
+{% if pgsql_network_listen %}
+# Automatically adding network subnets also authorized in inventory
+{% for subnet in pgsql_network_subnets %}
+host all all {{ subnet }} md5
+{% endfor %}
+{% endif %}

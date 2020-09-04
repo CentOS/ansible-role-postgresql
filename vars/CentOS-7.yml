@@ -1,0 +1,8 @@
+# Variables for CentOS 7
+# List of pkgs to install
+postgresql_pkgs:
+  - postgresql-server
+  - postgresql-contrib
+  - postgresql-plpython
+  - python-psycopg2
+

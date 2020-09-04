@@ -1,14 +1,16 @@
 ---
 # tasks file for postgresql
+#
+- name: Importing specific distro variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+
 - name: Ensuring all PostgreSQL pkgs are installed
   yum:
-    name: "{{ item }}"
+    name: "{{ postgresql_pkgs }}"
     state: latest
-  with_items:
-    - postgresql-server
-    - postgresql-contrib
-    - postgresql-plpython
-    - python-psycopg2
     
 - name: Initialize postgres if necessary
   command: /usr/bin/postgresql-setup initdb
@@ -26,12 +28,63 @@
   notify:
     - restart_postgresql
 
+- name: TLS if required
+  include_tasks: tls.yml
+  tags:
+    - certs
+    - tls
+
 - name: Ensuring postgresql is started and enabled
   service:
     name: postgresql
     state: started
     enabled: True
 
+- name: Creating Users if not empty list
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    role_attr_flags: "NOCREATEDB,NOSUPERUSER,NOCREATEROLE"
+  become_user: postgres
+  with_items: "{{ pgsql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Creating Postgresql Databases
+  postgresql_db: 
+    name: "{{ item.name }}" 
+    owner: "{{ item.owner }}" 
+    encoding: UTF-8
+  become_user: postgres
+  with_items: "{{ pgsql_databases }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Granting DB rights to identified user
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    role_attr_flags: "NOCREATEDB,NOSUPERUSER,NOCREATEROLE"
+    db: "{{ item.db }}"
+    priv: 'ALL'
+  become_user: postgres
+  with_items: "{{ pgsql_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Opening up postgresql tcp port
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: "postgresql-{{ item | replace('/','-') }}"
+    iptables_protocol: tcp
+    iptables_port: "5432"
+    iptables_source: "{{ item }}"
+  when: pgsql_network_listen
+  with_items: "{{ pgsql_network_subnets }}"
+  tags:
+    - iptables
 # Backup
 - name: Ensuring backup user and jobs
   include_role:
