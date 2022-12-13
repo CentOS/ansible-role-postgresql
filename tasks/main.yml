@@ -27,6 +27,8 @@
     - pg_hba.conf
   notify:
     - restart_postgresql
+  tags:
+    - config
 
 - name: TLS if required
   include_tasks: tls.yml
@@ -49,6 +51,8 @@
   with_items: "{{ pgsql_users }}"
   loop_control:
     label: "{{ item.name }}"
+  tags:
+    - users
 
 - name: Creating Postgresql Databases
   postgresql_db: 
@@ -59,6 +63,8 @@
   with_items: "{{ pgsql_databases }}"
   loop_control:
     label: "{{ item.name }}"
+  tags:
+    - databases
 
 - name: Granting DB rights to identified user
   postgresql_user:
@@ -71,6 +77,9 @@
   with_items: "{{ pgsql_users }}"
   loop_control:
     label: "{{ item.name }}"
+  tags:
+    - users
+    - databases
 
 - name: Opening up postgresql tcp port
   include_role:
