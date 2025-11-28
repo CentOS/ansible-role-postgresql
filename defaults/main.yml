@@ -59,3 +59,9 @@ pgsql_users: []
 #   - name: database1
 #     owner: user1
 pgsql_databases: []     
+
+# Zabbix/monitoring part
+psql_zabbix_templates:
+  - Template CentOS PostgreSQL server
+psql_zabbix_groups:
+  - CentOS PostgreSQL servers

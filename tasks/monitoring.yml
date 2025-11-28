@@ -1,0 +1,26 @@
+- name: Add host in Zabbix UI
+  block:
+  - name: Configuring agent in Zabbix server
+    ansible.builtin.include_role:
+      name: zabbix-server
+      tasks_from: agent_config
+    vars:
+      zabbix_templates: "{{ psql_zabbix_templates }}"
+      zabbix_groups: "{{ psql_zabbix_groups }}"
+  tags:
+    - monitoring
+  delegate_to: "{{ zabbix_api_srv }}"
+  when: zabbix_api_srv is defined
+
+- name: Distribute local PostgreSQL idle_connections check
+  copy:
+    src: files/psql-monitoring-checks.sh
+    dest: /usr/lib/zabbix/psql-monitoring-checks.sh
+    mode: 0750
+    owner: root
+
+- name: Zabbix cron jobs
+  ansible.builtin.cron:
+    name: PostgreSQL monitoring
+    job: /usr/lib/zabbix/psql-monitoring-checks.sh
+    minute: "*/5"
