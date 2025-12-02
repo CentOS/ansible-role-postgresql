@@ -100,3 +100,7 @@
     name: centos-backup
     tasks_from: client
     
+- name: Include monitoring
+  ansible.builtin.include_tasks: monitoring.yml
+  tags:
+    - monitoring
