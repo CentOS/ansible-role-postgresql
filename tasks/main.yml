@@ -7,6 +7,21 @@
     - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_distribution }}.yml"
 
+  tags:
+    - always
+
+# specific el9 case where we can use module:stream for specific postgresql variant
+# see vars/RedHat-9.yml and you can override at host / import level
+- name: Configuring dnf module stream if required
+  template:
+    src: postgresql.module.j2
+    dest: /etc/dnf/modules.d/postgresql.module
+  tags:
+    - module
+  when:
+    - pgsql_module
+    - ansible_distribution_major_version == '9' 
+
 - name: Ensuring all PostgreSQL pkgs are installed
   yum:
     name: "{{ postgresql_pkgs }}"

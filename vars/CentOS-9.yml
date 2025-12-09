@@ -1,8 +1,9 @@
-# Variables for CentOS 8
+# Variables for CentOS 9
 # List of pkgs to install
 postgresql_pkgs:
   - postgresql-server
   - postgresql-contrib
+  - postgresql-upgrade
   - postgresql-plpython3
   - python3-psycopg2
 

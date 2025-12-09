@@ -3,6 +3,14 @@
 
 max_connections = {{ pgsql_max_connections }}
 shared_buffers = {{ pgsql_shared_buffers }}MB
+effective_cache_size = {{ pgsql_effective_cache_size }}MB
+maintenance_work_mem = {{ pgsql_maintenance_work_mem }}MB
+
+random_page_cost = {{ pgsql_random_page_cost }}
+seq_page_cost = {{ pgsql_seq_page_cost }}
+synchronous_commit = {{ pgsql_synchronous_commit }}
+effective_io_concurrency = {{ pgsql_effective_io_concurrency }}
+
 {% if pgsql_network_listen %}
 listen_addresses = '*'
 {% endif %}

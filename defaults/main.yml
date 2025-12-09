@@ -1,9 +1,35 @@
 ---
 # defaults variables for postgresql
 
+# Attention, we can support modularity but verify at the host level the version !
+pgsql_module: False
+# If set to True , which stream to use ?
+# postgresql on el9 has postgresql:15 and postgresql:16
+pgsql_module_stream: 16
+
+
 # Postgresql.conf settings
 pgsql_max_connections: 100
-pgsql_shared_buffers: 32 #in MB
+
+# Memory usage section
+# Using 25% of available host memory for shared_buffers but can be tuned per host
+pgsql_shared_buffers: "{{ (ansible_memtotal_mb * 0.25) | int }}" #in MB
+# Letting postgresql knowing how much total we can use, but again can be changed
+pgsql_effective_cache_size: "{{ (ansible_memtotal_mb * 0.6) | int }}" #in MB
+# Defaulting to 512MB for maintenance work items but can be tuned
+pgsql_maintenance_work_mem: 512 #in MB
+
+# I/O section
+# Based on default postgresql values, 4 being safe for HDD, but you can lower to 1.1 for SSD/NVMe disks !
+pgsql_random_page_cost: 4
+# Sequential reads are cheap to defaulting to 1
+pgsql_seq_page_cost: 1
+# Default is 1 but you can bump to higher value for ssd/NVME disks, like 100 or 200 (depending on number of drives,etc)
+pgsql_effective_io_concurrency: 1
+
+# Don't turn this on if you don't rely on safe battery-backed raid controller for RW cache
+# 'on' is safer, but you can go to 'off' (means asynchronous and delaying fsync operation for faster transactions commit
+pgsql_synchronous_commit: 'on'
 
 # Do we want to also be reachable on the network ?
 # opening tcp/5432 and listening on all interfaces
