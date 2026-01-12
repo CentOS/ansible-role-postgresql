@@ -7,6 +7,18 @@
     vars:
       zabbix_templates: "{{ psql_zabbix_templates }}"
       zabbix_groups: "{{ psql_zabbix_groups }}"
+
+  # set max_conns macro to the same as the Ansible variable
+  - name: Set PSQL max_connections host macro in Zabbix
+    command:
+      cmd: "/usr/libexec/centos/zabbix_host_tool
+           -n {{ inventory_hostname }}
+           -m PGSQL_MAX_CONNECTIONS
+           -v {{ pgsql_max_connections }}
+           "
+    register: zbx_macros_result
+    changed_when: "zbx_macros_result.rc == 2"
+    failed_when: "zbx_macros_result.rc == 1"
   tags:
     - monitoring
   delegate_to: "{{ zabbix_api_srv }}"
