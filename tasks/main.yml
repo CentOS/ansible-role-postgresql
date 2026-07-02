@@ -26,11 +26,31 @@
   yum:
     name: "{{ postgresql_pkgs }}"
     state: latest
-    
+
 - name: Initialize postgres if necessary
   command: /usr/bin/postgresql-setup initdb
   args:
     creates: /var/lib/pgsql/data/postgresql.conf
+
+- name: Systemd snippet directory for postgresql
+  file:
+    path: /etc/systemd/system/postgresql.service.d
+    state: directory
+
+- block:
+  - name: Configuring postgresql for auto-restart after fail
+    template:
+      src: systemd-postgresql.conf.j2
+      dest: /etc/systemd/system/postgresql.service.d/override.conf
+      mode: 0644
+    register: psql_systemd_override
+    notify:
+      - restart_postgresql
+
+  - name: Reloading systemd if needed
+    systemd:
+      daemon-reload: yes
+    when: psql_systemd_override is changed
 
 - name: Distribute Postgresql config files
   template:
