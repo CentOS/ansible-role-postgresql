@@ -1,0 +1,9 @@
+# Variables for CentOS Stream/RHEL 10
+# List of pkgs to install
+postgresql_pkgs:
+  - postgresql-server
+  - postgresql-contrib
+  - postgresql-upgrade
+  - postgresql-plpython3
+  - python3-psycopg2
+
