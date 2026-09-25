@@ -1,3 +1,24 @@
+- name: Creating pg_monitor zabbix user
+  postgresql_user:
+    name: "{{ pgsql_zabbix_pg_user }}"
+    password: "{{ pgsql_zabbix_pg_pass }}"
+    groups:
+      - pg_monitor
+    role_attr_flags: "INHERIT"
+  become_user: postgres
+
+- name: Populating zabbix monitoring .sql scripts from postgresql template
+  synchronize:
+    src: files/zabbix/postgresql
+    dest: /var/lib/zabbix/
+
+- name: Adding UserParameter fields for postgresql active checks
+  copy:
+    src: files/zabbix/template_db_postgresql.conf
+    dest: /etc/zabbix/zabbix_agentd.d/
+  notify:
+    - restart_zabbix_agent
+
 - name: Add host in Zabbix UI
   block:
   - name: Configuring agent in Zabbix server
@@ -15,6 +36,17 @@
            -n {{ inventory_hostname }}
            -m PGSQL_MAX_CONNECTIONS
            -v {{ pgsql_max_connections }}
+           "
+    register: zbx_macros_result
+    changed_when: "zbx_macros_result.rc == 2"
+    failed_when: "zbx_macros_result.rc == 1"
+
+  - name: Set Zabbix monitoring PG_PASS host macro in Zabbix
+    command:
+      cmd: "/usr/libexec/centos/zabbix_host_tool
+           -n {{ inventory_hostname }}
+           -m PG.PASSWORD
+           -v {{ pgsql_zabbix_pg_pass }}
            "
     register: zbx_macros_result
     changed_when: "zbx_macros_result.rc == 2"

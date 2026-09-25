@@ -5,3 +5,7 @@
   service:
     name: postgresql
     state: restarted
+- name: restart_zabbix_agent
+  service:
+    name: zabbix-agent
+    state: restarted

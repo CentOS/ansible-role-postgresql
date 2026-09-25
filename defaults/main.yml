@@ -101,6 +101,11 @@ pgsql_wal_keep_size: 0
 pgsql_max_slot_wal_keep_size: 2GB
 
 # Zabbix/monitoring part
+# We'll need a specific user with pg_monitor postgresql rights/role
+# We'll then also have a .conf so that zabbix will have enough rights to use psql .sql and report values to zabbix
+pgsql_zabbix_pg_user: zbx_monitor
+pgsql_zabbix_pg_pass: M0nit0rMe
+
 psql_zabbix_templates:
   - Template CentOS PostgreSQL server
 psql_zabbix_groups:
