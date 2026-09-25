@@ -9,3 +9,11 @@
 host all all {{ subnet }} md5
 {% endfor %}
 {% endif %}
+{% if pgsql_replication %}
+# Authorizing replication user
+{% if pgsql_tls %}
+hostssl replication {{ pgsql_replication_user }} 0.0.0.0/0 scram-sha-256
+{% else %}
+host replication {{ pgsql_replication_user }} 0.0.0.0/0 scram-sha-256
+{% endif%}
+{% endif %}

@@ -129,6 +129,26 @@
   with_items: "{{ pgsql_network_subnets }}"
   tags:
     - iptables
+
+- block:
+  - name: Creating replication user 
+    postgresql_user:
+      name: "{{ pgsql_replication_user }}"
+      password: "{{ pgsql_replication_pass }}"
+      role_attr_flags: "REPLICATION,LOGIN"
+    become_user: postgres
+
+  - name: Creating pgsql_replica_init script to start replica
+    template:
+      src: pgsql_replica_init.j2
+      dest: /var/lib/pgsql/pgsql_replica_init
+      owner: postgres
+      group: postgres
+      mode: '0750'
+  when: pgsql_replication
+  tags:
+    - replication
+
 # Backup
 - name: Ensuring backup user and jobs
   include_role:

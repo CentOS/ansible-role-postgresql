@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Simple bash wrapper around pg_basebackup to automate a new replica on a new host
+# Worth knowing that you can also reuse this script in the following situation
+# - secondary was ofline for too long
+# - wal files were dropped/rotated on primary
+# - replslot pointers are also pointing to disappeared was files
+# In that base, before running this script (emergency and unusual situation:
+# - see which slot it was normally using (see hostname -s)
+#   SELECT slot_name, plugin, slot_type, active, restart_lsn FROM pg_replication_slots;
+# - drop that slot name on primary first (as this script will recreate it
+#   SELECT pg_drop_replication_slot('<slot_name_from_hostname>');
+# - Call this script again for a full sync (starting from scratch)  
+
+clear
+echo ""
+echo "Postgresql secondary replica setup"
+echo "Requirements: "
+echo " => ensure primary server is correctly reachable through TLS/network port"
+echo " => needed password (prompted soon) for the [{{ pgsql_replication_user }}] user"
+echo " => local postgresql is stopped (systemctl stop postgresql) "
+echo ""
+echo "==== WARNING ====================================================================="
+echo "This tool will *delete* all existing postgresql data on this host !"
+echo "=================================================================================="
+
+pushd /var/lib/pgsql >/dev/null 2>&1
+# validating first we are user postgres
+if [ $(whoami) != 'postgres' ] ; then 
+  echo "Warning : not user postgres so become first postgres and relaunch"
+  exit 1
+fi
+# Verifying if postgresql is running
+systemctl is-active postgresql -q
+if [ "$?" -eq "0" ] ; then
+  echo "Postgresql is running, please stop it first ..."
+  exit 1
+fi
+
+echo "=> Ready to now DESTROY all local data and start the replicat process"
+read -p "Do you want to continue [Y/N] : " continue
+
+if [ ${continue} == 'Y' ] ; then
+  rm -Rf data/*
+  read -p "Primary DB hostname: " pg_primary_host
+  echo "Enter now the [{{ pgsql_replication_user }}] user password (see pgsql_replication_pass ansible variable)"
+{% if pgsql_tls %}
+  time pg_basebackup -d "host=${pg_primary_host} user={{ pgsql_replication_user }} sslmode=require" \
+{% else %}
+  time pg_basebackup -d "host=${pg_primary_host} user={{ pgsql_replication_user }}" \ 
+{% endif %}
+  --pgdata=/var/lib/pgsql/data \
+  --format=plain \
+  --wal-method=stream \
+  --write-recovery-conf \
+  --create-slot \
+  --slot $(hostname -s | tr '-' '_' | tr '[:upper:]' '[:lower:]') \
+  --progress  
+ 
+  echo "Init from streamed backup is done so you can now start local postgresql server and watch status"
+  echo '[psql -c "SELECT pg_is_in_recovery();"] as user postgresql once started'
+
+else
+  echo "Not selected [Y] (uppercase) .. exiting"
+fi

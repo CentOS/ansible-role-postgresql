@@ -86,6 +86,20 @@ pgsql_users: []
 #     owner: user1
 pgsql_databases: []     
 
+# Do we want to also stream/replicate to other hosts
+# Be sure to understand how to promote a secondary to primary (psql -c "SELECT pg_promote();") only when needed
+# We'll drop a pgsql_replica_init script for postgres user to help with initial replica (manual step and only once)
+pgsql_replication: False
+pgsql_replication_user: replicator
+pgsql_replication_pass: MySQLRules
+
+# If using replication, what's the max size for wal files on the primary
+# Normally not using that because we switch to slot based stream replication so no need to keep large size for wal files
+pgsql_wal_keep_size: 0
+# If we're using slots - by default we'll do for replication - this is the max size for *that* slot/for replication
+# So primary will keep that size of WAL files for secondary to catchup when rejoigning
+pgsql_max_slot_wal_keep_size: 2GB
+
 # Zabbix/monitoring part
 psql_zabbix_templates:
   - Template CentOS PostgreSQL server

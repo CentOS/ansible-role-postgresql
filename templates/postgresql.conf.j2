@@ -5,6 +5,8 @@ max_connections = {{ pgsql_max_connections }}
 shared_buffers = {{ pgsql_shared_buffers }}MB
 effective_cache_size = {{ pgsql_effective_cache_size }}MB
 maintenance_work_mem = {{ pgsql_maintenance_work_mem }}MB
+wal_keep_size = {{ pgsql_wal_keep_size }}
+max_slot_wal_keep_size = {{ pgsql_max_slot_wal_keep_size }}
 
 random_page_cost = {{ pgsql_random_page_cost }}
 seq_page_cost = {{ pgsql_seq_page_cost }}
