@@ -11,6 +11,13 @@
   synchronize:
     src: files/zabbix/postgresql
     dest: /var/lib/zabbix/
+  register: monitoring_files
+
+- name: Ensuring correct selinux context on monitoring files
+  command:
+    cmd: /usr/sbin/restorecon -R zabbix
+    chdir: /var/lib
+  when: monitoring_files.changed  
 
 - name: Adding UserParameter fields for postgresql active checks
   copy:
